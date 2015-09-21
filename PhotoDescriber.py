@@ -3,6 +3,7 @@ import os
 from PIL import ImageTk, Image
 import csv
 
+
 max_thumbnail_size = 800, 800
 
 
@@ -45,10 +46,10 @@ class App:
              
         self.description_number = 0
         self.description_label = Tkinter.Label(self.input_frame,text='Description: ')
-        self.description = Tkinter.Entry(self.input_frame,width=90)
+        self.description = Tkinter.Text(self.input_frame,width=90,height=4)
         
         self.tags_label = Tkinter.Label(self.input_frame,text='Tags: ')
-        self.tags = Tkinter.Entry(self.input_frame,width=40)
+        self.tags = Tkinter.Text(self.input_frame,width=40,height=2)
         
         self.address_label = Tkinter.Label(self.input_frame,text='Address: ')
         self.address = Tkinter.Entry(self.input_frame,width=40)
@@ -74,7 +75,9 @@ class App:
             self.read_manifest()            
             for row in self.manifest:                
                 if self.photos[self.description_number] in row:                    
-                    self.description_number = self.description_number + 1          
+                    self.description_number = self.description_number + 1
+        else:
+            self.write_header()
         self.display_page()
         self.browse_button.grid_forget()
         self.upload_button.grid_forget()
@@ -83,8 +86,7 @@ class App:
     def display_page(self):        
         number_of_photos = len(self.photos) - 1        
         if self.description_number == 0:            
-            if len(self.manifest) == 0:
-                self.description.insert(0,"A photograph of ")
+            if len(self.manifest) == 0:                
                 self.next_button.grid(row=0,column=3,sticky='w')                
             else:
                 self.next_button.grid(row=0,column=3,sticky='w')
@@ -99,14 +101,14 @@ class App:
         
         for lst in self.manifest:
             if self.photos[self.description_number] in lst:                
-                self.description.insert(0,lst[5])
+                self.description.insert('1.0',lst[5])
                 self.address.insert(0,lst[1])
-                self.tags.insert(0,lst[6])
+                self.tags.insert('1.0',lst[6])
                 self.latitude.insert(0,lst[3])
                 self.longitude.insert(0,lst[4])
                 photo_in_lst = True
         if photo_in_lst == False:
-            self.description.insert(0,"A photograph of ")
+            self.description.insert('1.0',"A photograph of ")
          
         self.filename_label.configure(text='Filename: ' + self.photos[self.description_number])
         self.filename_label.grid(row=0,sticky='nw',columnspan=2)
@@ -171,12 +173,20 @@ class App:
                 
         self.display_page()
         
+    def write_header(self):
+        header = ['Path','Address','Position','Latitude','Longitude','Description','Tags','File Size']
+        self.manifest.append(header)
+        file = open(self.photo_location + '/manifest.csv','wb')
+        csvwriter = csv.writer(file)        
+        csvwriter.writerow(header)
+        file.close()
+        
     def save_description(self):
         file = open(self.photo_location + '/manifest.csv','wb')
         csvwriter = csv.writer(file)        
-        
-        self.description_inputted = self.description.get()
-        self.tags_inputted = self.tags.get()
+                
+        self.description_inputted = self.description.get('1.0','end')        
+        self.tags_inputted = self.tags.get('1.0','end')
         self.address_inputted = self.address.get()
         self.latitude_inputted = self.latitude.get()
         self.longitude_inputted = self.longitude.get()
@@ -184,10 +194,15 @@ class App:
         current_photo = self.photos[self.description_number]
         file_size = self.get_file_size()
         
-        try:
-            self.position = self.latitude + ', ' + self.logitude + ' (estimate)'
-        except:
+        if self.latitude_inputted != '' and self.longitude_inputted != '':
+            self.position = self.latitude_inputted + ', ' + self.longitude_inputted + ' (estimate)'
+        else:
             self.position = '<null>'
+            self.latitude_inputted = '<null>'
+            self.longitude_inputted = '<null>'
+        
+        if len(self.address_inputted) == 0:
+            self.address_inputted = '<null>'
         
         for lst in self.manifest:
             if current_photo in lst:
@@ -195,14 +210,13 @@ class App:
         
         row = [current_photo,self.address_inputted,self.position,self.latitude_inputted,self.longitude_inputted,self.description_inputted,self.tags_inputted,file_size]
         
-        if row not in self.manifest:
-            self.manifest.append(row)
-            csvwriter.writerow(['Path','Address','Position','Latitude','Longitude','Description','Tags','File Size'])
-            for lst in self.manifest:                
-                csvwriter.writerow(lst)
+        self.manifest.append(row)
+        
+        for lst in self.manifest:                
+            csvwriter.writerow(lst)
         file.close()
-        self.description.delete(0,len(self.description_inputted))
-        self.tags.delete(0,len(self.tags_inputted))
+        self.description.delete('1.0','end')
+        self.tags.delete('1.0','end')
         self.address.delete(0,len(self.address_inputted))
         self.latitude.delete(0,len(self.latitude_inputted))
         self.longitude.delete(0,len(self.longitude_inputted))
