@@ -3,60 +3,67 @@ import os
 from PIL import ImageTk, Image
 import csv
 import shutil
-
-
-max_thumbnail_size = 800, 800
+import tkFont
 
 
 class App:
-    def __init__(self,master):        
-        self.frame = Tkinter.Frame(master,width=200,height=100)        
+    def __init__(self,master):  
+        master.configure(bg = '#D6EBF2')
+        master.rowconfigure(0,weight=1)
+        master.columnconfigure(0,weight=1)
+        
+        self.frame = Tkinter.Frame(master,bg = '#D6EBF2')        
         self.frame.grid()
         
-        self.image_frame = Tkinter.Frame(self.frame)
+        
+        self.image_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
         self.image_frame.grid(row=0,column=0)
         
-        self.info_frame = Tkinter.Frame(self.frame)
-        self.info_frame.grid(row=0,column=1,rowspan=3)
+        self.info_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
+        self.info_frame.grid(row=0,column=1,padx=5,pady=30)
         
-        self.button_frame = Tkinter.Frame(self.frame)
+        self.button_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
         self.button_frame.grid(row=1)
         
-        self.input_frame = Tkinter.Frame(self.frame)
+        self.input_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
         self.input_frame.grid(row=2)
         
-        self.browse_button = Tkinter.Button(self.frame,text="Select Folder",command=self.get_photo_location)
+        self.browse_button = Tkinter.Button(self.frame,text="   Select Folder  ",command=self.get_photo_location, bg='#D6EBF2',fg='#2a2f30')
         self.browse_button.grid(row=0,column=0,sticky='w')
 
-        self.upload_button = Tkinter.Button(self.frame,text="Describe Photos",command=self.get_photos_list)
+        self.upload_button = Tkinter.Button(self.frame,text="Describe Photos",command=self.get_photos_list, bg='#D6EBF2',fg='#2a2f30')
         
-        self.folder_label = Tkinter.Label(self.frame)
+        self.folder_label = Tkinter.Label(self.frame,bg = '#D6EBF2',fg='#2a2f30')
                 
         self.photo_location = None
         self.photos = None        
-        self.image_label = Tkinter.Label(self.image_frame)
+        self.image_label = Tkinter.Label(self.image_frame,bg = '#D6EBF2',fg='#2a2f30')
         
-        self.filename_label = Tkinter.Label(self.info_frame)
-        self.filesize_label = Tkinter.Label(self.info_frame)
+        self.filename_label = Tkinter.Label(self.info_frame,bg = '#D6EBF2',fg='#2a2f30',text='File Name: ')
+        self.filesize_label = Tkinter.Label(self.info_frame,bg = '#D6EBF2',fg='#2a2f30',text='File Size: ')
         
-        self.latitude_label = Tkinter.Label(self.info_frame)
+        self.photo_filename_label = Tkinter.Label(self.info_frame,bg = '#D6EBF2',fg='#2a2f30')
+        self.photo_filesize_label = Tkinter.Label(self.info_frame,bg = '#D6EBF2',fg='#2a2f30')
+        
+        self.latitude_label = Tkinter.Label(self.info_frame,bg = '#D6EBF2',fg='#2a2f30')
         self.latitude = Tkinter.Entry(self.info_frame,width=20)
-        self.longitude_label = Tkinter.Label(self.info_frame)
+        self.longitude_label = Tkinter.Label(self.info_frame,bg = '#D6EBF2',fg='#2a2f30')
         self.longitude = Tkinter.Entry(self.info_frame,width=20)
         
              
         self.description_number = 0
-        self.description_label = Tkinter.Label(self.input_frame,text='Description: ')
-        self.description = Tkinter.Text(self.input_frame,width=90,height=4)
+        self.description_label = Tkinter.Label(self.input_frame,text='Description: ', bg = '#D6EBF2',fg='#2a2f30')
+        self.description = Tkinter.Text(self.input_frame,width=90,height=4,wrap='word')
         
-        self.tags_label = Tkinter.Label(self.input_frame,text='Tags: ')
-        self.tags = Tkinter.Text(self.input_frame,width=40,height=2)
+        self.tags_label = Tkinter.Label(self.input_frame,text='Tags: ',bg = '#D6EBF2',fg='#2a2f30')
+        self.tags = Tkinter.Text(self.input_frame,width=40,height=2,wrap='word')
         
-        self.address_label = Tkinter.Label(self.input_frame,text='Address: ')
+        self.address_label = Tkinter.Label(self.input_frame,text='Address: ', bg = '#D6EBF2',fg='#2a2f30')
         self.address = Tkinter.Entry(self.input_frame,width=40)
         
-        self.next_button = Tkinter.Button(self.button_frame,text="Next",command=self.next_photo)
-        self.previous_button = Tkinter.Button(self.button_frame,text="Previous",command=self.previous_photo)
+        self.next_button = Tkinter.Button(self.button_frame,text="Next",command=self.next_photo, bg='#EEF7F9',fg='#2a2f30')
+        
+        self.previous_button = Tkinter.Button(self.button_frame,text="Previous",command=self.previous_photo, bg='#EEF7F9',fg='#2a2f30')
         
         self.manifest = []
         
@@ -69,6 +76,8 @@ class App:
     def get_photos_list(self):
         #creates a list of photos
         self.photos = [ photo for photo in os.listdir(self.photo_location) if os.path.isfile(os.path.join(self.photo_location,photo)) ]        
+        self.photos.sort()
+        
         if 'Thumbs.db' in self.photos:
             self.photos.remove('Thumbs.db')        
         if 'manifest.csv' in self.photos:
@@ -111,29 +120,33 @@ class App:
         if photo_in_lst == False:
             self.description.insert('1.0',"A photograph of ")
          
-        self.filename_label.configure(text='Filename: ' + self.photos[self.description_number])
-        self.filename_label.grid(row=0,sticky='nw',columnspan=2)
         
-        self.filesize_label.configure(text='Filesize: ' + self.get_file_size())
-        self.filesize_label.grid(row=1,sticky='nw',columnspan=2)
+        self.filename_label.grid(row=0,column=0,sticky='nw')
+        self.filesize_label.grid(row=1,column=0,sticky='nw')
+        
+        self.photo_filename_label.configure(text=self.photos[self.description_number])
+        self.photo_filename_label.grid(row=0,column=1,sticky='nw')
+        
+        self.photo_filesize_label.configure(text=self.get_file_size())
+        self.photo_filesize_label.grid(row=1,column=1,sticky='nw')
         
         self.latitude_label.configure(text='Latitude: ')
-        self.latitude_label.grid(row=2,column=0)
+        self.latitude_label.grid(row=2,column=0,sticky='nw')
         self.latitude.grid(row=2, column=1)
         
         self.longitude_label.configure(text='Longitude: ')
-        self.longitude_label.grid(row=3,column=0)
+        self.longitude_label.grid(row=3,column=0,sticky='nw')
         self.longitude.grid(row=3,column=1)
         
         
-        self.description_label.grid(row=0,column=0,sticky='e')
-        self.description.grid(row=0,column=1,columnspan=3,sticky='nsw')
+        self.description_label.grid(row=0,column=0,sticky='e',pady=5)
+        self.description.grid(row=0,column=1,columnspan=3,sticky='nsw',pady=5)
         
-        self.tags_label.grid(row=1,column=0,sticky='nsw')
-        self.tags.grid(row=1,column=1,sticky='nsw')
+        self.tags_label.grid(row=1,column=0,sticky='nse',pady=5)
+        self.tags.grid(row=1,column=1,sticky='nsw',pady=5)
         
-        self.address_label.grid(row=1,column=2,sticky='nsw')
-        self.address.grid(row=1,column=3,sticky='nsw')
+        self.address_label.grid(row=1,column=2,sticky='nsw',pady=5)
+        self.address.grid(row=1,column=3,sticky='nsw',pady=5)
         
         self.display_thumbnail()
         
@@ -155,15 +168,17 @@ class App:
             os.makedirs(self.thumbnail_folder)          
                         
         if not os.path.exists(self.thumbnail_location):            
+            hpercent = (800/float(self.img.size[1]))
+            wsize = int((float(self.img.size[0])*float(hpercent)))
             #creates a thumbnail
-            self.img.thumbnail(max_thumbnail_size, Image.ANTIALIAS)              
+            self.img.thumbnail((800,wsize), Image.ANTIALIAS)              
             #saves the thumbnail in the thumbnails folder
             self.img.save(self.thumbnail_location,"JPEG")        
         #turns this thumbnail into a useable image
         self.thumbnail = ImageTk.PhotoImage(Image.open(self.thumbnail_location))        
         #creates a label widget with the thumbnail image in it
         self.image_label.configure(image=self.thumbnail)
-        self.image_label.grid(row=0,column=0,columnspan=3)
+        self.image_label.grid(row=0,column=0)
         
     def next_photo(self):
         self.save_description()
