@@ -2,6 +2,7 @@ import Tkinter, tkFileDialog
 import os
 from PIL import ImageTk, Image
 import csv
+import shutil
 
 
 max_thumbnail_size = 800, 800
@@ -147,9 +148,12 @@ class App:
         #opens the current image
         self.img = Image.open(self.photo_location + "/" + current_image)        
         
-        #makes thumbnail location
-        self.thumbnail_location = "Thumbnails/" + self.photos[self.description_number][:-4] + " thumbnail.jpg"
+        self.thumbnail_folder = "Thumbnails/"
+        self.thumbnail_location = self.thumbnail_folder + self.photos[self.description_number][:-4] + " thumbnail.jpg"
         
+        if not os.path.exists(self.thumbnail_folder):
+            os.makedirs(self.thumbnail_folder)          
+                        
         if not os.path.exists(self.thumbnail_location):            
             #creates a thumbnail
             self.img.thumbnail(max_thumbnail_size, Image.ANTIALIAS)              
@@ -226,6 +230,12 @@ class App:
         csv_reader = csv.reader(file)
         for row in csv_reader:
             self.manifest.append(row)
+    def delete_thumbnails(self):        
+        try:
+            shutil.rmtree(self.thumbnail_folder)
+            root.destroy()
+        except:
+            root.destroy()
     
 def get_file_size(num):		
     for x in ['bytes','KB','MB','GB','TB']:
@@ -237,4 +247,5 @@ def get_file_size(num):
           
 root = Tkinter.Tk()
 app = App(root)
+root.protocol("WM_DELETE_WINDOW",app.delete_thumbnails)
 root.mainloop()
