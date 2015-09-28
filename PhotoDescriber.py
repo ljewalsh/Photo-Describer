@@ -204,8 +204,8 @@ class App:
         file = open(self.photo_location + '/manifest.csv','wb')
         csvwriter = csv.writer(file)        
                 
-        self.description_inputted = self.description.get('1.0','end')        
-        self.tags_inputted = self.tags.get('1.0','end')
+        self.description_inputted = self.description.get('1.0','end').strip()        
+        self.tags_inputted = self.tags.get('1.0','end').strip()
         self.address_inputted = self.address.get()
         self.latitude_inputted = self.latitude.get()
         self.longitude_inputted = self.longitude.get()
@@ -213,7 +213,7 @@ class App:
         current_photo = self.photos[self.description_number]
         file_size = self.get_file_size()
         
-        if self.latitude_inputted != '' and self.longitude_inputted != '':
+        if self.latitude_inputted != '' and self.longitude_inputted != '' and self.latitude_inputted != '<null>' and self.longitude_inputted != '<null>':
             self.position = self.latitude_inputted + ', ' + self.longitude_inputted + ' (estimate)'
         else:
             self.position = '<null>'
