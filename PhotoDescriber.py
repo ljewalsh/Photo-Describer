@@ -4,6 +4,8 @@ from PIL import ImageTk, Image
 import csv
 import shutil
 import tkFont
+import imghdr
+import webbrowser
 
 
 class App:
@@ -15,12 +17,14 @@ class App:
         self.frame = Tkinter.Frame(master,bg = '#D6EBF2')        
         self.frame.grid()
         
-        
         self.image_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
         self.image_frame.grid(row=0,column=0)
         
         self.info_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
         self.info_frame.grid(row=0,column=1,padx=5,pady=30)
+        
+        self.image_link_frame = Tkinter.Frame(self.frame,bg='#D6EBf2')
+        self.image_link_frame.grid(row=2,column=1,padx=5,pady=30)
         
         self.button_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
         self.button_frame.grid(row=1)
@@ -39,6 +43,8 @@ class App:
         self.photos = None        
         self.image_label = Tkinter.Label(self.image_frame,bg = '#D6EBF2',fg='#2a2f30')
         
+        self.photo_number_label = Tkinter.Label(self.info_frame,bg='#D6EBF2',fg='#2a2f30',text='')
+        
         self.filename_label = Tkinter.Label(self.info_frame,bg = '#D6EBF2',fg='#2a2f30',text='File Name: ')
         self.filesize_label = Tkinter.Label(self.info_frame,bg = '#D6EBF2',fg='#2a2f30',text='File Size: ')
         
@@ -50,6 +56,7 @@ class App:
         self.longitude_label = Tkinter.Label(self.info_frame,bg = '#D6EBF2',fg='#2a2f30')
         self.longitude = Tkinter.Entry(self.info_frame,width=20)
         
+        self.image_link = Tkinter.Button(self.image_link_frame, text='View Photo', command=self.open_photo, bg='#EEF7F9', fg='#2a2f30')
              
         self.description_number = 0
         self.description_label = Tkinter.Label(self.input_frame,text='Description: ', bg = '#D6EBF2',fg='#2a2f30')
@@ -68,7 +75,7 @@ class App:
         self.manifest = []
         
     def get_photo_location(self):
-        self.photo_location = tkFileDialog.askdirectory()
+        self.photo_location = tkFileDialog.askdirectory(initialdir='U:\\bulk\quakestudies\content')
         self.folder_label.configure(text=self.photo_location)
         self.folder_label.grid(row=0,column=1)
         self.upload_button.grid(row=1,column=0)
@@ -77,6 +84,8 @@ class App:
         #creates a list of photos
         self.photos = [ photo for photo in os.listdir(self.photo_location) if os.path.isfile(os.path.join(self.photo_location,photo)) ]        
         self.photos.sort()
+        
+        
         
         if 'Thumbs.db' in self.photos:
             self.photos.remove('Thumbs.db')        
@@ -91,7 +100,8 @@ class App:
         self.display_page()
         self.browse_button.grid_forget()
         self.upload_button.grid_forget()
-        self.folder_label.grid_forget()
+        self.folder_label.grid_forget()        
+        
         
     def display_page(self):        
         number_of_photos = len(self.photos) - 1        
@@ -119,25 +129,29 @@ class App:
                 photo_in_lst = True
         if photo_in_lst == False:
             self.description.insert('1.0',"A photograph of ")
-         
         
-        self.filename_label.grid(row=0,column=0,sticky='nw')
-        self.filesize_label.grid(row=1,column=0,sticky='nw')
+        self.image_link.grid(row=0,column=0)  
+        self.photo_number_text = 'Photo ' + str(self.description_number + 1) + " of " + str(number_of_photos + 1)
+        
+        self.photo_number_label.configure(text=self.photo_number_text)
+        self.photo_number_label.grid(row=0,column=0,columnspan=2,sticky='nw')
+        
+        self.filename_label.grid(row=1,column=0,sticky='nw')
+        self.filesize_label.grid(row=2,column=0,sticky='nw')
         
         self.photo_filename_label.configure(text=self.photos[self.description_number])
-        self.photo_filename_label.grid(row=0,column=1,sticky='nw')
+        self.photo_filename_label.grid(row=1,column=1,sticky='nw')
         
         self.photo_filesize_label.configure(text=self.get_file_size())
-        self.photo_filesize_label.grid(row=1,column=1,sticky='nw')
+        self.photo_filesize_label.grid(row=2,column=1,sticky='nw')
         
         self.latitude_label.configure(text='Latitude: ')
-        self.latitude_label.grid(row=2,column=0,sticky='nw')
-        self.latitude.grid(row=2, column=1)
+        self.latitude_label.grid(row=3,column=0,sticky='nw')
+        self.latitude.grid(row=3, column=1)
         
         self.longitude_label.configure(text='Longitude: ')
-        self.longitude_label.grid(row=3,column=0,sticky='nw')
-        self.longitude.grid(row=3,column=1)
-        
+        self.longitude_label.grid(row=4,column=0,sticky='nw')
+        self.longitude.grid(row=4,column=1)
         
         self.description_label.grid(row=0,column=0,sticky='e',pady=5)
         self.description.grid(row=0,column=1,columnspan=3,sticky='nsw',pady=5)
@@ -251,6 +265,8 @@ class App:
             root.destroy()
         except:
             root.destroy()
+    def open_photo(self):
+        webbrowser.open(self.photo_location + "/" + self.photos[self.description_number])
     
 def get_file_size(num):		
     for x in ['bytes','KB','MB','GB','TB']:
