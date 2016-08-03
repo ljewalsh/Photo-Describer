@@ -29,6 +29,9 @@ class App:
         
         self.button_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
         self.button_frame.grid(row=1)
+		
+        self.find_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
+        self.find_frame.grid(row=1,column=1)
         
         self.input_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
         self.input_frame.grid(row=2)
@@ -68,12 +71,14 @@ class App:
         self.tags = Tkinter.Text(self.input_frame,width=40,height=2,wrap='word')
         
         self.address_label = Tkinter.Label(self.input_frame,text='Address: ', bg = '#D6EBF2',fg='#2a2f30')
-        self.address = Tkinter.Entry(self.input_frame,width=40)
-        
+        self.address = Tkinter.Entry(self.input_frame,width=40)	
+		
+        self.target_photo = Tkinter.Entry(self.find_frame, width=40)
+        self.go_to_photo_button = Tkinter.Button(self.find_frame, text="Go to photo",command=self.set_photo, bg='#EEF7F9',fg='#2a2f30')
+		
         self.next_button = Tkinter.Button(self.button_frame,text="Next",command=self.next_photo, bg='#EEF7F9',fg='#2a2f30')
-        
         self.previous_button = Tkinter.Button(self.button_frame,text="Previous",command=self.previous_photo, bg='#EEF7F9',fg='#2a2f30')
-        
+		
         self.manifest = []
         self.photos = []
         
@@ -112,6 +117,9 @@ class App:
         else:
             self.next_button.grid(row=0,column=3,sticky='w')
             self.previous_button.grid(row=0,column=0,sticky='e')
+		
+        self.target_photo.grid(row=0, column=3, sticky='w')
+        self.go_to_photo_button.grid(row=0, column=3, sticky='e')
             
         for row in self.manifest:            
             if self.photos[self.description_number] in row:                
@@ -206,16 +214,20 @@ class App:
         self.image_label.grid(row=0,column=0)
         
     def next_photo(self):
-        self.save_description()
-        self.description_number = self.description_number + 1       
-            
-        self.display_page()
+		self.go_to_photo(self.description_number + 1)
         
     def previous_photo(self):        
-        self.save_description()        
-        self.description_number = self.description_number - 1        
-                
-        self.display_page()
+		self.go_to_photo(self.description_number - 1)
+		
+    def go_to_photo(self, index):
+		self.save_description()
+		self.description_number = index
+		self.display_page()
+		
+    def set_photo(self):
+		self.photo_inputted = int(self.target_photo.get())-1
+		self.go_to_photo(self.photo_inputted)
+        
         
     def write_manifest(self):        
         file = open(self.manifest_location + '/manifest.csv','wb')
