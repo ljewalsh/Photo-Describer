@@ -6,6 +6,7 @@ import shutil
 import tkFont
 import imghdr
 import webbrowser
+import fileinput
 
 
 class App:
@@ -32,15 +33,16 @@ class App:
         self.input_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
         self.input_frame.grid(row=2)
         
-        self.browse_button = Tkinter.Button(self.frame,text="   Select Folder  ",command=self.get_photo_location, bg='#D6EBF2',fg='#2a2f30')
+        self.browse_button = Tkinter.Button(self.frame,text="   Select Folder  ",command=self.get_manifest_location, bg='#D6EBF2',fg='#2a2f30')
         self.browse_button.grid(row=0,column=0,sticky='w')
-
-        self.upload_button = Tkinter.Button(self.frame,text="Describe Photos",command=self.get_photos_list, bg='#D6EBF2',fg='#2a2f30')
+        
+        self.upload_button = Tkinter.Button(self.frame,text="Describe Photos",command=self.get_manifest, bg='#D6EBF2',fg='#2a2f30')
         
         self.folder_label = Tkinter.Label(self.frame,bg = '#D6EBF2',fg='#2a2f30')
-                
-        self.photo_location = None
-        self.photos = None        
+        self.manifest_error_label = Tkinter.Label(self.frame,bg = '#D6EBF2',fg='#2a2f30')      
+        
+        self.manifest_location = None
+          
         self.image_label = Tkinter.Label(self.image_frame,bg = '#D6EBF2',fg='#2a2f30')
         
         self.photo_number_label = Tkinter.Label(self.info_frame,bg='#D6EBF2',fg='#2a2f30',text='')
@@ -73,30 +75,25 @@ class App:
         self.previous_button = Tkinter.Button(self.button_frame,text="Previous",command=self.previous_photo, bg='#EEF7F9',fg='#2a2f30')
         
         self.manifest = []
+        self.photos = []
         
-    def get_photo_location(self):
-        self.photo_location = tkFileDialog.askdirectory(initialdir='U:\\bulk\quakestudies\content')
-        self.folder_label.configure(text=self.photo_location)
+    def get_manifest_location(self):
+        self.manifest_location = tkFileDialog.askdirectory(initialdir='E:\\')
+        self.folder_label.configure(text=self.manifest_location)
         self.folder_label.grid(row=0,column=1)
         self.upload_button.grid(row=1,column=0)
         
-    def get_photos_list(self):
-        #creates a list of photos
-        self.photos = [ photo for photo in os.listdir(self.photo_location) if os.path.isfile(os.path.join(self.photo_location,photo)) ]        
-        self.photos.sort()
-        
-        
-        
-        if 'Thumbs.db' in self.photos:
-            self.photos.remove('Thumbs.db')        
-        if 'manifest.csv' in self.photos:
-            self.photos.remove('manifest.csv')
-            self.read_manifest()            
-            for row in self.manifest:                
-                if self.photos[self.description_number] in row:                    
-                    self.description_number = self.description_number + 1
-        else:
-            self.write_header()
+    def get_manifest(self):
+        self.read_manifest()
+                
+        for row in self.manifest:
+            if row[self.description_column] != "<null>":
+                self.description_number += 1
+                self.photos.append(row[0])            
+            else:
+                self.photos.append(row[0])
+        if self.description_number == len(self.photos):
+			self.description_number = 0
         self.display_page()
         self.browse_button.grid_forget()
         self.upload_button.grid_forget()
@@ -104,34 +101,48 @@ class App:
         
         
     def display_page(self):        
-        number_of_photos = len(self.photos) - 1        
+        number_of_photos = len(self.photos)
+        
         if self.description_number == 0:            
-            if len(self.manifest) == 0:                
-                self.next_button.grid(row=0,column=3,sticky='w')                
-            else:
-                self.next_button.grid(row=0,column=3,sticky='w')
-                self.previous_button.grid_forget()       
-        elif self.description_number == number_of_photos:           
+            self.previous_button.grid_forget()
+            self.next_button.grid(row=0,column=3,sticky='w')           
+        elif self.description_number == number_of_photos - 1:           
             self.next_button.grid_forget()
-            self.previous_button.grid(row=0,column=0,sticky='e')            
+            self.previous_button.grid(row=0,column=0,sticky='e')
         else:
             self.next_button.grid(row=0,column=3,sticky='w')
-            self.previous_button.grid(row=0,column=0,sticky='e') 
-        photo_in_lst = False
-        
-        for lst in self.manifest:
-            if self.photos[self.description_number] in lst:                
-                self.description.insert('1.0',lst[5])
-                self.address.insert(0,lst[1])
-                self.tags.insert('1.0',lst[6])
-                self.latitude.insert(0,lst[3])
-                self.longitude.insert(0,lst[4])
-                photo_in_lst = True
-        if photo_in_lst == False:
-            self.description.insert('1.0',"A photograph of ")
+            self.previous_button.grid(row=0,column=0,sticky='e')
+            
+        for row in self.manifest:            
+            if self.photos[self.description_number] in row:                
+                if row[self.description_column]=='<null>':
+                    self.description.insert('1.0',"A photograph of ")
+                else:
+                    self.description.insert('1.0',row[self.description_column])
+                
+                if row[self.address_column] != "<null>":                
+                    self.address.insert(0,row[self.address_column])
+                else:
+                    self.address.insert(0,"")
+                
+                if row[self.tags_column] != "<null>":
+                    self.tags.insert('1.0',row[self.tags_column])
+                else:
+                    self.tags.insert(1.0,"")
+                
+                if row[self.latitude_column] != "<null>":
+                    self.latitude.insert(0,row[self.latitude_column])
+                else:
+                    self.latitude.insert(0,"")
+                    
+                if row[self.longitude_column] != "<null>":
+                    self.longitude.insert(0,row[self.longitude_column])
+                else:
+                    self.longitude.insert(0,"")
+                
         
         self.image_link.grid(row=0,column=0)  
-        self.photo_number_text = 'Photo ' + str(self.description_number + 1) + " of " + str(number_of_photos + 1)
+        self.photo_number_text = 'Photo ' + str(self.description_number + 1) + " of " + str(number_of_photos)
         
         self.photo_number_label.configure(text=self.photo_number_text)
         self.photo_number_label.grid(row=0,column=0,columnspan=2,sticky='nw')
@@ -165,7 +176,7 @@ class App:
         self.display_thumbnail()
         
     def get_file_size(self):
-        current_photo = self.photo_location + "/" + self.photos[self.description_number]
+        current_photo = self.manifest_location + "/" + self.photos[self.description_number]
         bytes = os.stat(current_photo).st_size
         file_size = get_file_size(bytes)
         return file_size
@@ -173,7 +184,7 @@ class App:
     def display_thumbnail(self):
         current_image = self.photos[self.description_number]        
         #opens the current image
-        self.img = Image.open(self.photo_location + "/" + current_image)        
+        self.img = Image.open(self.manifest_location + "/" + current_image)        
         
         self.thumbnail_folder = "Thumbnails/"
         self.thumbnail_location = self.thumbnail_folder + self.photos[self.description_number][:-4] + " thumbnail.jpg"
@@ -196,7 +207,7 @@ class App:
         
     def next_photo(self):
         self.save_description()
-        self.description_number = self.description_number + 1        
+        self.description_number = self.description_number + 1       
             
         self.display_page()
         
@@ -206,28 +217,26 @@ class App:
                 
         self.display_page()
         
-    def write_header(self):
-        header = ['Path','Address','Position','Latitude','Longitude','Description','Tags','File Size']
-        self.manifest.append(header)
-        file = open(self.photo_location + '/manifest.csv','wb')
+    def write_manifest(self):        
+        file = open(self.manifest_location + '/manifest.csv','wb')
+        
         csvwriter = csv.writer(file)        
-        csvwriter.writerow(header)
+        csvwriter.writerow(self.header)
+        for row in self.manifest:            
+            csvwriter.writerow(row)
         file.close()
         
     def save_description(self):
-        file = open(self.photo_location + '/manifest.csv','wb')
-        csvwriter = csv.writer(file)        
-                
         self.description_inputted = self.description.get('1.0','end').strip()        
         self.tags_inputted = self.tags.get('1.0','end').strip()
         self.address_inputted = self.address.get()
         self.latitude_inputted = self.latitude.get()
         self.longitude_inputted = self.longitude.get()
         
-        current_photo = self.photos[self.description_number]
+        self.current_row = self.manifest[self.description_number]
         file_size = self.get_file_size()
         
-        if self.latitude_inputted != '' and self.longitude_inputted != '' and self.latitude_inputted != '<null>' and self.longitude_inputted != '<null>':
+        if self.latitude_inputted != '' and self.longitude_inputted != '':
             self.position = self.latitude_inputted + ', ' + self.longitude_inputted + ' (estimate)'
         else:
             self.position = '<null>'
@@ -236,18 +245,27 @@ class App:
         
         if len(self.address_inputted) == 0:
             self.address_inputted = '<null>'
+
+        if self.description_inputted != 'A photograph of':
+            self.current_row[self.header_index("part/field_dc_description")] = self.description_inputted
+        else:
+            self.current_row[self.header_index("part/field_dc_description")] = '<null>'
         
-        for lst in self.manifest:
-            if current_photo in lst:
-                self.manifest.remove(lst)                
+        if self.tags_inputted != '':
+            self.tags_inputted = self.tags_inputted
+        else:
+            self.tags_inputted = "<null>"
         
-        row = [current_photo,self.address_inputted,self.position,self.latitude_inputted,self.longitude_inputted,self.description_inputted,self.tags_inputted,file_size]
         
-        self.manifest.append(row)
+        self.current_row[self.address_column] = self.address_inputted
+        self.current_row[self.tags_column] = self.tags_inputted
+        self.current_row[self.latitude_column] = self.latitude_inputted
+        self.current_row[self.longitude_column] = self.longitude_inputted
+        self.current_row[self.position_column] = self.position
         
-        for lst in self.manifest:                
-            csvwriter.writerow(lst)
-        file.close()
+        self.manifest[self.description_number] = self.current_row
+        self.write_manifest()
+        
         self.description.delete('1.0','end')
         self.tags.delete('1.0','end')
         self.address.delete(0,len(self.address_inputted))
@@ -255,10 +273,23 @@ class App:
         self.longitude.delete(0,len(self.longitude_inputted))
     
     def read_manifest(self):
-        file = open(self.photo_location + '/manifest.csv','rb')
-        csv_reader = csv.reader(file)
-        for row in csv_reader:
-            self.manifest.append(row)
+        file = open(self.manifest_location + '/manifest.csv','rb')               
+        csvreader= csv.reader(file)
+        for number, row in enumerate(csvreader):            
+            if number == 0:
+                self.header = row
+                self.header_index = self.header.index            
+            else:
+                self.manifest.append(row)
+                
+             
+        self.description_column = self.header_index("part/field_dc_description")
+        self.address_column = self.header_index("#address/field_dc_title")
+        self.tags_column = self.header_index("part/field_part_tags")
+        self.latitude_column = self.header_index("position/field_latitude")
+        self.longitude_column = self.header_index("position/field_longitude")
+        self.position_column = self.header_index("#position/field_dc_title")
+        
     def delete_thumbnails(self):        
         try:
             shutil.rmtree(self.thumbnail_folder)
@@ -266,9 +297,9 @@ class App:
         except:
             root.destroy()
     def open_photo(self):
-        webbrowser.open(self.photo_location + "/" + self.photos[self.description_number])
+        webbrowser.open(self.manifest_location + "/" + self.photos[self.description_number])
     
-def get_file_size(num):		
+def get_file_size(num):        
     for x in ['bytes','KB','MB','GB','TB']:
         if num < 1024.0:
             return "%3.1f %s" % (num, x)
