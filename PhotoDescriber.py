@@ -240,8 +240,15 @@ class App:
 		self.display_page()
 		
     def set_photo(self):
-		self.photo_inputted = int(self.target_photo.get())-1
-		self.go_to_photo(self.photo_inputted)
+		try:
+			self.photo_inputted = int(self.target_photo.get())-1
+			self.target_photo.delete(0, "end")
+		except Exception,e:
+			tkMessageBox.showerror("Validation Error", "Failed to go to page, you must input an integer no greater than the number of photos")
+		if self.photo_inputted < len(self.photos):
+			self.go_to_photo(self.photo_inputted)
+		else:
+			tkMessageBox.showerror("Validation Error", "Failed to go to page, you must input an integer no greater than the number of photos")
         
     def write_manifest(self):        
         file = open(self.manifest_location + '/manifest.csv','wb')
