@@ -30,6 +30,9 @@ class App:
         
         self.button_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
         self.button_frame.grid(row=1)
+		
+        self.find_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
+        self.find_frame.grid(row=1,column=1)
         
         self.input_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
         self.input_frame.grid(row=2)
@@ -71,10 +74,13 @@ class App:
         self.address_label = Tkinter.Label(self.input_frame,text='Address: ', bg = '#D6EBF2',fg='#2a2f30')
         self.address = Tkinter.Entry(self.input_frame,width=40)
         
+        self.target_photo = Tkinter.Entry(self.find_frame, width=40)
+        self.go_to_photo_button = Tkinter.Button(self.find_frame, text="Go to photo",command=self.set_photo, bg='#EEF7F9',fg='#2a2f30')
+        
         self.next_button = Tkinter.Button(self.button_frame,text="Next",command= lambda: self.change_photo(1), bg='#EEF7F9',fg='#2a2f30')
         
         self.previous_button = Tkinter.Button(self.button_frame,text="Previous",command= lambda: self.change_photo(-1), bg='#EEF7F9',fg='#2a2f30')
-        
+
         self.manifest = []
         self.photos = []
         
@@ -116,6 +122,9 @@ class App:
         else:
             self.next_button.grid(row=0,column=3,sticky='w')
             self.previous_button.grid(row=0,column=0,sticky='e')
+		
+        self.target_photo.grid(row=0, column=3, sticky='w')
+        self.go_to_photo_button.grid(row=0, column=3, sticky='e')
             
         for row in self.manifest:            
             if self.photos[self.description_number] in row:                
@@ -143,7 +152,8 @@ class App:
                     self.longitude.insert(0,row[self.longitude_column])
                 else:
                     self.longitude.insert(0,"")
-                    
+                
+
         
         self.image_link.grid(row=0,column=0)  
         self.photo_number_text = 'Photo ' + str(self.description_number + 1) + " of " + str(number_of_photos)
@@ -208,23 +218,29 @@ class App:
         #creates a label widget with the thumbnail image in it
         self.image_label.configure(image=self.thumbnail)
         self.image_label.grid(row=0,column=0)
-        
-    def change_photo(self,value): #value is +1 if next, -1 if previous
-        prevdesc = self.manifest[self.description_number][self.description_column] #checks if description was null before saving
-        totaldesc = 0 #checks how many photos have descriptions
-        self.save_description()
-        for row in self.manifest:
-            if row[self.description_column] != "<null>":
-                totaldesc += 1
-        if totaldesc == len(self.photos) and prevdesc == "<null>":
+             
+    def change_photo(self,value):        
+		self.go_to_photo(self.description_number + value)
+		
+    def go_to_photo(self, index):
+		prevdesc = self.manifest[self.description_number][self.description_column] #checks if description was null before saving
+		totaldesc = 0 #checks how many photos have descriptions
+		self.save_description()
+		for row in self.manifest:
+			if row[self.description_column] != "<null>":
+				totaldesc += 1
+		if totaldesc == len(self.photos) and prevdesc == "<null>":
 			MB_Title = "All Photos Described"
 			MB_Text = "You have just described the final photo in the folder. Continue?"
 			result = tkMessageBox.askyesno(title = MB_Title, message=MB_Text)
 			if not result:
 				root.quit()
-        self.description_number = self.description_number + value       
-            
-        self.display_page()
+		self.description_number = index
+		self.display_page()
+		
+    def set_photo(self):
+		self.photo_inputted = int(self.target_photo.get())-1
+		self.go_to_photo(self.photo_inputted)
         
     def write_manifest(self):        
         file = open(self.manifest_location + '/manifest.csv','wb')
