@@ -91,7 +91,8 @@ class App:
         self.upload_button.grid(row=1,column=0)
         
     def get_manifest(self):
-        self.read_manifest()
+        if not self.read_manifest():
+                return
                 
         for row in self.manifest:
             if row[self.description_column] != "<null>":
@@ -298,7 +299,13 @@ class App:
         self.longitude.delete(0,len(self.longitude_inputted))
     
     def read_manifest(self):
-        file = open(self.manifest_location + '/manifest.csv','rb')               
+    	try:
+        	file = open(self.manifest_location + '/manifest.csv','rb')               
+        except IOError:
+        	MB_Title = "Missing Manifest"
+        	MB_Text = "There is no valid manifest in the selected folder. Please create one and try again."
+        	tkMessageBox.showerror(MB_Title, MB_Text)
+        	return False
         csvreader= csv.reader(file)
         for number, row in enumerate(csvreader):            
             if number == 0:
@@ -307,13 +314,20 @@ class App:
             else:
                 self.manifest.append(row)
                 
-             
-        self.description_column = self.header_index("part/field_dc_description")
-        self.address_column = self.header_index("#address/field_dc_title")
-        self.tags_column = self.header_index("part/field_part_tags")
-        self.latitude_column = self.header_index("position/field_latitude")
-        self.longitude_column = self.header_index("position/field_longitude")
-        self.position_column = self.header_index("#position/field_dc_title")
+    	try:
+        	self.description_column = self.header_index("part/field_dc_description")
+        	self.address_column = self.header_index("#address/field_dc_title")
+        	self.tags_column = self.header_index("part/field_part_tags")
+        	self.latitude_column = self.header_index("position/field_latitude")
+        	self.longitude_column = self.header_index("position/field_longitude")
+        	self.position_column = self.header_index("#position/field_dc_title")
+        except ValueError:
+        	MB_Title = "Invalid Manifest"
+        	MB_Text = "The manifest in the selected folder is not formatted correctly. Please reformat or delete it and try again."
+        	tkMessageBox.showerror(MB_Title, MB_Text)
+        	self.manifest = []
+        	return False
+        return True
         
     def delete_thumbnails(self):        
         try:
