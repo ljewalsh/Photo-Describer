@@ -167,11 +167,14 @@ class App:
         
         self.previous_button = Tkinter.Button(self.button_frame,text="Previous",command= lambda: self.change_photo(-1), bg='#EEF7F9',fg='#2a2f30')
 		
+        self.next_undescribed_button = Tkinter.Button(self.button_frame,text="Next Undescribed",command= lambda: self.next_undescribed_photo(), bg='#EEF7F9',fg='#2a2f30')
+		
         '''
-		lists of photos and information in the manifest
+		lists of photos, information in the manifest, and indecies of undescribed photos
 		'''
         self.manifest = []
         self.photos = []
+        self.undescribed_photos = []
     
     '''
 	Called by a button in the initial frame, creates an explorer window
@@ -193,22 +196,25 @@ class App:
     def get_manifest(self):
         if not self.read_manifest():
                 return
-                
+        index_number = 0       
         for row in self.manifest:
-            if row[self.description_column] != "<null>":
-                self.description_number += 1
+            if row[self.description_column] == "<null>":
+				self.undescribed_photos.append(index_number)
+            index_number += 1
             self.photos.append(row[0]) #I put this outside the if statement since it happens regardless
-        if self.description_number == len(self.photos):
+        if len(self.undescribed_photos) == 0:
 			self.description_number = 0
 			MB_Title = "All Photos Described"
 			MB_Text = "All files in the selected folder already have a description set. Continue?"
 			result = tkMessageBox.askyesno(title = MB_Title, message=MB_Text)
 			if not result:
 				root.quit()
-        self.display_page()
+        else:
+			self.description_number = self.undescribed_photos[0]
         self.browse_button.grid_forget()
         self.upload_button.grid_forget()
-        self.folder_label.grid_forget()        
+        self.folder_label.grid_forget() 
+        self.display_page()       
         
     '''
 	Called by get_manifest and go_to_photo
@@ -220,11 +226,14 @@ class App:
         
         if self.description_number == 0:            
             self.previous_button.grid_forget()
-            self.next_button.grid(row=0,column=3,sticky='w')           
+            self.next_button.grid(row=0,column=3,sticky='w')
+            self.next_undescribed_button.grid(row=0, column = 6, sticky='w')			
         elif self.description_number == number_of_photos - 1:           
             self.next_button.grid_forget()
+            self.next_undescribed_button.grid_forget()
             self.previous_button.grid(row=0,column=0,sticky='e')
         else:
+            self.next_undescribed_button.grid(row=0, column = 6, sticky='w')
             self.next_button.grid(row=0,column=3,sticky='w')
             self.previous_button.grid(row=0,column=0,sticky='e')
 		
@@ -334,8 +343,9 @@ class App:
 		self.go_to_photo(self.description_number + value)
 		
     def go_to_photo(self, index):
-    	#sets the current photo to the specified index number
-		if len(self.description.get('1.0','end').strip() ) < 20:
+		prevdesc = self.manifest[self.description_number][self.description_column] #checks if description was null before saving
+		#sets the current photo to the specified index number
+		if len(self.description.get('1.0','end').strip()) < 20:
 			#If the user has not entered a long enough description, this message box confirms if they want to leave it
 			MB_Title = "No Description"
 			MB_Text = "Are you sure you want to leave the current photo without adding a comprehensive description?"
@@ -343,15 +353,14 @@ class App:
 			if not result:
 				#If they click no, the function cancels itself
 				return
-		prevdesc = self.manifest[self.description_number][self.description_column] #checks if description was null before saving
-		totaldesc = 0 #checks how many photos have descriptions
+			self.undescribed_photos.append(self.description_number)
+			self.undescribed_photos.sort()\
+		#Removes the index from undescribed photos if a description has been added
+		elif prevdesc == "<null>":
+			self.undescribed_photos.remove(self.description_number)
 		self.save_description()
-		#counts how many photos in the list have been described
-		for row in self.manifest:
-			if row[self.description_column] != "<null>":
-				totaldesc += 1
 		#shows a message box if a description is entered for the last photo that didn't have one
-		if totaldesc == len(self.photos) and prevdesc == "<null>":
+		if len(self.undescribed_photos) == 0 and prevdesc == "<null>":
 			MB_Title = "All Photos Described"
 			MB_Text = "You have just described the final photo in the folder. Continue?"
 			result = tkMessageBox.askyesno(title = MB_Title, message=MB_Text)
@@ -361,6 +370,16 @@ class App:
 		#Then the next photo is set
 		self.description_number = index
 		self.display_page()
+		
+    def next_undescribed_photo(self):
+		#finds the next index in the undescribed photos array
+		for index in self.undescribed_photos:
+			if index > self.description_number:
+				self.go_to_photo(index)
+				return
+		MB_Title = "Can't find Another"
+		MB_Text = "There are no undescribed photos after this one"
+		tkMessageBox.showerror(MB_Title, MB_Text)
 		
     def set_photo(self):
     	#gets the number from the input box as a reference to the photo number
