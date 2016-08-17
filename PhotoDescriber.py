@@ -220,43 +220,55 @@ class App:
         self.image_label.configure(image=self.thumbnail)
         self.image_label.grid(row=0,column=0)
              
-    def change_photo(self,value):        
+    def change_photo(self,value):        #"value" is either 1 or -1 depending on the button
+    	#goes to either the next or previous photo in the list depending on which button is pressed
 		self.go_to_photo(self.description_number + value)
 		
     def go_to_photo(self, index):
+    	#sets the current photo to the specified index number
 		if len(self.description.get('1.0','end').strip() ) < 20:
+			#If the user has not entered a long enough description, this message box confirms if they want to leave it
 			MB_Title = "No Description"
 			MB_Text = "Are you sure you want to leave the current photo without adding a comprehensive description?"
 			result = tkMessageBox.askyesno(MB_Title, MB_Text)
 			if not result:
+				#If they click no, the function cancels itself
 				return
 		prevdesc = self.manifest[self.description_number][self.description_column] #checks if description was null before saving
 		totaldesc = 0 #checks how many photos have descriptions
 		self.save_description()
+		#counts how many photos in the list have been described
 		for row in self.manifest:
 			if row[self.description_column] != "<null>":
 				totaldesc += 1
+		#shows a message box if a description is entered for the last photo that didn't have one
 		if totaldesc == len(self.photos) and prevdesc == "<null>":
 			MB_Title = "All Photos Described"
 			MB_Text = "You have just described the final photo in the folder. Continue?"
 			result = tkMessageBox.askyesno(title = MB_Title, message=MB_Text)
+			#if the user doesn't want to continue, the app closes itself
 			if not result:
 				root.quit()
+		#Then the next photo is set
 		self.description_number = index
 		self.display_page()
 		
     def set_photo(self):
+    	#gets the number from the input box as a reference to the photo number
 		try:
 			self.photo_inputted = int(self.target_photo.get())-1
 			self.target_photo.delete(0, "end")
 		except Exception,e:
+			#If the number is invalid then an error pops up
 			tkMessageBox.showerror("Validation Error", "Input must be an integer")
 		if 0 <= self.photo_inputted < len(self.photos):
+			#If the number fits in the list length, it goes to that photo
 			self.go_to_photo(self.photo_inputted)
 		else:
-			tkMessageBox.showerror("Validation Error", "Failed to go to page, you must input an integer no greater than the number of photos")
+			tkMessageBox.showerror("Validation Error", "Failed to go to page, you must input a valid integer no greater than the number of photos")
         
     def write_manifest(self):        
+    	#writes to the manifest based on the app's instance of it
         file = open(self.manifest_location + '/manifest.csv','wb')
         
         csvwriter = csv.writer(file)        
@@ -266,15 +278,18 @@ class App:
         file.close()
         
     def save_description(self):
+    	#gets all the values inputted in the input boxes
         self.description_inputted = self.description.get('1.0','end').strip()        
         self.tags_inputted = self.tags.get('1.0','end').strip()
         self.address_inputted = self.address.get()
         self.latitude_inputted = self.latitude.get()
         self.longitude_inputted = self.longitude.get()
         
+        #references the current photo in a variable
         self.current_row = self.manifest[self.description_number]
         file_size = self.get_file_size()
         
+        #handles empty input boxes and converts the values to something usable by the manifest
         if self.latitude_inputted != '' and self.longitude_inputted != '':
             self.position = self.latitude_inputted + ', ' + self.longitude_inputted + ' (estimate)'
         else:
@@ -295,16 +310,18 @@ class App:
         else:
             self.tags_inputted = "<null>"
         
-        
+        #saves the inputted values onto the app's instance of the manifest
         self.current_row[self.address_column] = self.address_inputted
         self.current_row[self.tags_column] = self.tags_inputted
         self.current_row[self.latitude_column] = self.latitude_inputted
         self.current_row[self.longitude_column] = self.longitude_inputted
         self.current_row[self.position_column] = self.position
         
+        #saves the app's manifest instance onto the file
         self.manifest[self.description_number] = self.current_row
         self.write_manifest()
         
+        #empties the input boxes
         self.description.delete('1.0','end')
         self.tags.delete('1.0','end')
         self.address.delete(0,len(self.address_inputted))
@@ -313,13 +330,16 @@ class App:
     
     def read_manifest(self):
     	try:
+    		#opens the manifest file
         	file = open(self.manifest_location + '/manifest.csv','rb')               
         except IOError:
+        	#Cancels the function when no manifest can be found and displays an error message
         	MB_Title = "Missing Manifest"
         	MB_Text = "There is no valid manifest in the selected folder. Please create one and try again."
         	tkMessageBox.showerror(MB_Title, MB_Text)
         	return False
         csvreader= csv.reader(file)
+        #saves the file's manifest data to a local instance
         for number, row in enumerate(csvreader):            
             if number == 0:
                 self.header = row
@@ -328,6 +348,7 @@ class App:
                 self.manifest.append(row)
                 
     	try:
+    		#finds the relavent header fields in the manifest files and references them
         	self.description_column = self.header_index("part/field_dc_description")
         	self.address_column = self.header_index("#address/field_dc_title")
         	self.tags_column = self.header_index("part/field_part_tags")
@@ -335,6 +356,7 @@ class App:
         	self.longitude_column = self.header_index("position/field_longitude")
         	self.position_column = self.header_index("#position/field_dc_title")
         except ValueError:
+        	#If the correct headers can't be found, the local manifest is emptied and the function terminates
         	MB_Title = "Invalid Manifest"
         	MB_Text = "The manifest in the selected folder is not formatted correctly. Please reformat or delete it and try again."
         	tkMessageBox.showerror(MB_Title, MB_Text)
@@ -343,22 +365,26 @@ class App:
         return True
         
     def delete_thumbnails(self):        
+    	#gets rid of the temporary thumbnails and the folder that contained them if it exists
         try:
             shutil.rmtree(self.thumbnail_folder)
             root.destroy()
         except:
             root.destroy()
+            
     def open_photo(self):
+    	#opens the image file for the currently set photo
         webbrowser.open(self.manifest_location + "/" + self.photos[self.description_number])
     
 def get_file_size(num):        
+	#calculates the size of a file and returns the value
     for x in ['bytes','KB','MB','GB','TB']:
         if num < 1024.0:
             return "%3.1f %s" % (num, x)
         num /= 1024.0        
 
  
-          
+#runs the client code          
 root = Tkinter.Tk()
 app = App(root)
 root.protocol("WM_DELETE_WINDOW",app.delete_thumbnails)
