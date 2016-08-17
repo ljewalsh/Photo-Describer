@@ -224,6 +224,12 @@ class App:
 		self.go_to_photo(self.description_number + value)
 		
     def go_to_photo(self, index):
+		if len(self.description.get('1.0','end').strip() ) < 20:
+			MB_Title = "No Description"
+			MB_Text = "Are you sure you want to leave the current photo without adding a comprehensive description?"
+			result = tkMessageBox.askyesno(MB_Title, MB_Text)
+			if not result:
+				return
 		prevdesc = self.manifest[self.description_number][self.description_column] #checks if description was null before saving
 		totaldesc = 0 #checks how many photos have descriptions
 		self.save_description()
