@@ -11,44 +11,115 @@ import fileinput
 
 
 class App:
+
+	
     def __init__(self,master):  
+	
+	#master app which holds all the frames
+	#Has one column and one row
+	
         master.configure(bg = '#D6EBF2')
         master.rowconfigure(0,weight=1)
         master.columnconfigure(0,weight=1)
+		
+        '''
+		The main frame which holds other frames
+		and their widgets. Frame looks like this:
+		
+		Main frame
+		_________________________________________
+		|                   |                   |
+		|                   |                   |
+		|     Image Frame	|    Info Frame     |
+		|                   |                   |
+		|                   |                   |
+		|___________________|___________________|                                   
+		|                   |                   |
+		|    Button Frame   |     Find Frame    |
+		|___________________|___________________|
+		|                   |                   |
+		|   Input Frame     |  Image Link Frame |
+		|___________________|___________________|
+		
+		
+		'''
         
         self.frame = Tkinter.Frame(master,bg = '#D6EBF2')        
         self.frame.grid()
         
+        '''
+		The image frame holds the thumbnail 
+		of the image to be described
+		'''
         self.image_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
         self.image_frame.grid(row=0,column=0)
         
+        '''
+		The info frame holds the index of the photo,
+		the file name, the file size and the latitude and longitude
+		'''
         self.info_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
         self.info_frame.grid(row=0,column=1,padx=5,pady=30)
         
+		
+        '''
+		The image link frame holds a button that opens
+		a full size version of the image being described
+		'''
         self.image_link_frame = Tkinter.Frame(self.frame,bg='#D6EBf2')
         self.image_link_frame.grid(row=2,column=1,padx=5,pady=30)
         
+		
+        '''
+		The button frame holds the next and previous buttons,
+		used to navigate between the photos
+		'''
         self.button_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
         self.button_frame.grid(row=1)
 		
+        '''
+		The find frame holds an entry panel used to input an integer
+		and a button to go to the photo with that index 
+		'''
         self.find_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
         self.find_frame.grid(row=1,column=1)
         
+        '''
+		The input frame holds boxes that can be used to add tags,
+		an adress, or a description to the photo
+		'''
         self.input_frame = Tkinter.Frame(self.frame,bg = '#D6EBF2')
         self.input_frame.grid(row=2)
         
+        '''
+		Buttons in the initial frame, the former will open a browser window
+		used to select a folder of photos to be described, the later will
+		open the main window using the contents of that file
+		'''
         self.browse_button = Tkinter.Button(self.frame,text="   Select Folder  ",command=self.get_manifest_location, bg='#D6EBF2',fg='#2a2f30')
         self.browse_button.grid(row=0,column=0,sticky='w')
         
         self.upload_button = Tkinter.Button(self.frame,text="Describe Photos",command=self.get_manifest, bg='#D6EBF2',fg='#2a2f30')
         
+        '''
+		Labels in the initial frame, the former indicates the folder that has been selected,
+		(this information is stored in the manifext_location variable),
+		the latter is currently un-used
+		'''
         self.folder_label = Tkinter.Label(self.frame,bg = '#D6EBF2',fg='#2a2f30')
         self.manifest_error_label = Tkinter.Label(self.frame,bg = '#D6EBF2',fg='#2a2f30')      
         
         self.manifest_location = None
-          
+        
+        '''
+		A label which will display the image selected
+		'''
         self.image_label = Tkinter.Label(self.image_frame,bg = '#D6EBF2',fg='#2a2f30')
         
+        '''
+		The contents of the info frame: the labels are determined by the selected photo
+		the entry objects are used to input co-ordinates
+		'''
         self.photo_number_label = Tkinter.Label(self.info_frame,bg='#D6EBF2',fg='#2a2f30',text='')
         
         self.filename_label = Tkinter.Label(self.info_frame,bg = '#D6EBF2',fg='#2a2f30',text='File Name: ')
@@ -62,9 +133,20 @@ class App:
         self.longitude_label = Tkinter.Label(self.info_frame,bg = '#D6EBF2',fg='#2a2f30')
         self.longitude = Tkinter.Entry(self.info_frame,width=20)
         
+        '''
+		A button linking to the full image
+		'''
         self.image_link = Tkinter.Button(self.image_link_frame, text='View Photo', command=self.open_photo, bg='#EEF7F9', fg='#2a2f30')
-             
+        
+        '''
+		A variable used to store the number of images with descriptions
+		'''
         self.description_number = 0
+		
+        '''
+		Labels and input boxes for the input frame, one for description,
+		one for tags and one for address
+		'''
         self.description_label = Tkinter.Label(self.input_frame,text='Description: ', bg = '#D6EBF2',fg='#2a2f30')
         self.description = Tkinter.Text(self.input_frame,width=90,height=4,wrap='word')
         
@@ -74,22 +156,40 @@ class App:
         self.address_label = Tkinter.Label(self.input_frame,text='Address: ', bg = '#D6EBF2',fg='#2a2f30')
         self.address = Tkinter.Entry(self.input_frame,width=30)
         
+        '''
+		Navigation between the photos, all of the buttons will call the change photo function with a certain
+		parameter (either 1, -1 or an inputted value)
+		'''
         self.target_photo = Tkinter.Entry(self.find_frame, width=20)
         self.go_to_photo_button = Tkinter.Button(self.find_frame, text="Go to photo",command=self.set_photo, bg='#EEF7F9',fg='#2a2f30')
         
         self.next_button = Tkinter.Button(self.button_frame,text="Next",command= lambda: self.change_photo(1), bg='#EEF7F9',fg='#2a2f30')
         
         self.previous_button = Tkinter.Button(self.button_frame,text="Previous",command= lambda: self.change_photo(-1), bg='#EEF7F9',fg='#2a2f30')
-
+		
+        '''
+		lists of photos and information in the manifest
+		'''
         self.manifest = []
         self.photos = []
-        
+    
+    '''
+	Called by a button in the initial frame, creates an explorer window
+	to  choose the manifest location and enables new widgets to be seen
+	'''
     def get_manifest_location(self):
         self.manifest_location = tkFileDialog.askdirectory(initialdir='E:\\')
         self.folder_label.configure(text=self.manifest_location)
         self.folder_label.grid(row=0,column=1)
         self.upload_button.grid(row=1,column=0)
-        
+    
+    '''
+	Called by a button in the initial frame
+	firstly checks the manifest for photos without a description
+	while populateing the photos array with photos from the manifest
+	and asks user for confirmation if there are none.
+	After this it opens the main window and hides the information used in the initial window
+    '''    
     def get_manifest(self):
         if not self.read_manifest():
                 return
@@ -110,7 +210,11 @@ class App:
         self.upload_button.grid_forget()
         self.folder_label.grid_forget()        
         
-        
+    '''
+	Called by get_manifest and go_to_photo
+	Loads the main page with infomation dependant on the selected photo
+	(stored in the description_number variable)
+    '''    
     def display_page(self):        
         number_of_photos = len(self.photos)
         
@@ -189,7 +293,12 @@ class App:
         self.address.grid(row=1,column=3,sticky='nsw',pady=5)
         
         self.display_thumbnail()
-        
+    
+    '''
+	Called by display_page
+	determines the file size in bytes of the current photo
+	and returns that as a value
+    '''    
     def get_file_size(self):
         current_photo = self.manifest_location + "/" + self.photos[self.description_number]
         bytes = os.stat(current_photo).st_size
