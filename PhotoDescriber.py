@@ -72,9 +72,9 @@ class App:
         self.tags = Tkinter.Text(self.input_frame,width=40,height=2,wrap='word')
         
         self.address_label = Tkinter.Label(self.input_frame,text='Address: ', bg = '#D6EBF2',fg='#2a2f30')
-        self.address = Tkinter.Entry(self.input_frame,width=40)
+        self.address = Tkinter.Entry(self.input_frame,width=30)
         
-        self.target_photo = Tkinter.Entry(self.find_frame, width=40)
+        self.target_photo = Tkinter.Entry(self.find_frame, width=20)
         self.go_to_photo_button = Tkinter.Button(self.find_frame, text="Go to photo",command=self.set_photo, bg='#EEF7F9',fg='#2a2f30')
         
         self.next_button = Tkinter.Button(self.button_frame,text="Next",command= lambda: self.change_photo(1), bg='#EEF7F9',fg='#2a2f30')
@@ -245,7 +245,7 @@ class App:
 			self.target_photo.delete(0, "end")
 		except Exception,e:
 			tkMessageBox.showerror("Validation Error", "Input must be an integer")
-		if 0 < self.photo_inputted < len(self.photos):
+		if 0 <= self.photo_inputted < len(self.photos):
 			self.go_to_photo(self.photo_inputted)
 		else:
 			tkMessageBox.showerror("Validation Error", "Failed to go to page, you must input an integer no greater than the number of photos")
