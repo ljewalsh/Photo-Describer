@@ -225,18 +225,15 @@ class App:
 	def display_page(self):        
 		number_of_photos = len(self.photos)
         
+		self.next_button.grid(row=0,column=3,sticky='w')
+		self.next_undescribed_button.grid(row=0, column = 6, sticky='w')	
+		self.previous_button.grid(row=0,column=0,sticky='e')
+        
 		if self.description_number == 0:            
-			self.previous_button.grid_forget()
-			self.next_button.grid(row=0,column=3,sticky='w')
-			self.next_undescribed_button.grid(row=0, column = 6, sticky='w')			
-		elif self.description_number == number_of_photos - 1:           
+			self.previous_button.grid_forget()		
+		if self.description_number == number_of_photos - 1:           
 			self.next_button.grid_forget()
 			self.next_undescribed_button.grid_forget()
-			self.previous_button.grid(row=0,column=0,sticky='e')
-		else:
-			self.next_undescribed_button.grid(row=0, column = 6, sticky='w')
-			self.next_button.grid(row=0,column=3,sticky='w')
-			self.previous_button.grid(row=0,column=0,sticky='e')
 		
 		self.target_photo.grid(row=0, column=3, sticky='w')
 		self.go_to_photo_button.grid(row=0, column=3, sticky='e')
