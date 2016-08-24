@@ -241,30 +241,30 @@ class App:
 		self.target_photo.grid(row=0, column=3, sticky='w')
 		self.go_to_photo_button.grid(row=0, column=3, sticky='e')
             
-        for row in self.manifest:            
-            if self.photos[self.description_number] in row:                
-                if row[self.description_column]=='<null>':
-                    self.description.insert('1.0',"A photograph of ")
-                else:
-                    self.description.insert('1.0',row[self.description_column])
+		for row in self.manifest:            
+			if self.photos[self.description_number] in row:                
+				if row[self.description_column]=='<null>':
+					self.description.insert('1.0',"A photograph of ")
+				else:
+					self.description.insert('1.0',row[self.description_column])
                 
-                if self.address_column != '<null>':
+				if self.address_column != '<null>':
 					if row[self.address_column] != "<null>":                
 						self.address.insert(0,row[self.address_column])
 					else:
 						self.address.insert(0,"")
                 
-                if row[self.tags_column] != "<null>":
-                    self.tags.insert('1.0',row[self.tags_column])
-                else:
-                    self.tags.insert(1.0,"")
+				if row[self.tags_column] != "<null>":
+					self.tags.insert('1.0',row[self.tags_column])
+				else:
+					self.tags.insert(1.0,"")
                 
                 if self.position_column != '<null>':
 					if row[self.latitude_column] != "<null>":
 						self.latitude.insert(0,row[self.latitude_column])
 					else:
 						self.latitude.insert(0,"")
-                    
+					
 					if row[self.longitude_column] != "<null>":
 						self.longitude.insert(0,row[self.longitude_column])
 					else:
@@ -272,42 +272,42 @@ class App:
                 
 
         
-        self.image_link.grid(row=0,column=0)  
-        self.photo_number_text = 'Photo ' + str(self.description_number + 1) + " of " + str(number_of_photos)
-        
-        self.photo_number_label.configure(text=self.photo_number_text)
-        self.photo_number_label.grid(row=0,column=0,columnspan=2,sticky='nw')
-        
-        self.filename_label.grid(row=1,column=0,sticky='nw')
-        self.filesize_label.grid(row=2,column=0,sticky='nw')
-        
-        self.photo_filename_label.configure(text=self.photos[self.description_number])
-        self.photo_filename_label.grid(row=1,column=1,sticky='nw')
-        
-        self.photo_filesize_label.configure(text=self.get_file_size())
-        self.photo_filesize_label.grid(row=2,column=1,sticky='nw')
-        
+		self.image_link.grid(row=0,column=0)  
+		self.photo_number_text = 'Photo ' + str(self.description_number + 1) + " of " + str(number_of_photos)
 		
-        if self.position_column != '<null>':
+		self.photo_number_label.configure(text=self.photo_number_text)
+		self.photo_number_label.grid(row=0,column=0,columnspan=2,sticky='nw')
+        
+		self.filename_label.grid(row=1,column=0,sticky='nw')
+		self.filesize_label.grid(row=2,column=0,sticky='nw')
+        
+		self.photo_filename_label.configure(text=self.photos[self.description_number])
+		self.photo_filename_label.grid(row=1,column=1,sticky='nw')
+		
+		self.photo_filesize_label.configure(text=self.get_file_size())
+		self.photo_filesize_label.grid(row=2,column=1,sticky='nw')
+		
+		
+		if self.position_column != '<null>':
 			self.latitude_label.configure(text='Latitude: ')
 			self.latitude_label.grid(row=3,column=0,sticky='nw')
 			self.latitude.grid(row=3, column=1)
-        
+		
 			self.longitude_label.configure(text='Longitude: ')
 			self.longitude_label.grid(row=4,column=0,sticky='nw')
 			self.longitude.grid(row=4,column=1)
+		
+		self.description_label.grid(row=0,column=0,sticky='e',pady=5)
+		self.description.grid(row=0,column=1,columnspan=3,sticky='nsw',pady=5)
         
-        self.description_label.grid(row=0,column=0,sticky='e',pady=5)
-        self.description.grid(row=0,column=1,columnspan=3,sticky='nsw',pady=5)
-        
-        self.tags_label.grid(row=1,column=0,sticky='nse',pady=5)
-        self.tags.grid(row=1,column=1,sticky='nsw',pady=5)
-        
-        if self.address_column != '<null>':
+		self.tags_label.grid(row=1,column=0,sticky='nse',pady=5)
+		self.tags.grid(row=1,column=1,sticky='nsw',pady=5)
+		
+		if self.address_column != '<null>':
 			self.address_label.grid(row=1,column=2,sticky='nsw',pady=5)
 			self.address.grid(row=1,column=3,sticky='nsw',pady=5)
         
-        self.display_thumbnail()
+		self.display_thumbnail()
     
 	'''
 	Called by display_page
@@ -439,30 +439,30 @@ class App:
 		else:
 			self.current_row[self.header_index("part/field_dc_description")] = '<null>'
         
-        if self.tags_inputted != '':
-            self.tags_inputted = self.tags_inputted
-        else:
-            self.tags_inputted = "<null>"
-        
+		if self.tags_inputted != '':
+			self.tags_inputted = self.tags_inputted
+		else:
+			self.tags_inputted = "<null>"
+		
         #saves the inputted values onto the app's instance of the manifest
-        self.current_row[self.tags_column] = self.tags_inputted
-        if self.address_column != '<null>':
+		self.current_row[self.tags_column] = self.tags_inputted
+		if self.address_column != '<null>':
 			self.current_row[self.address_column] = self.address_inputted
-        if self.position_column != '<null>':
+		if self.position_column != '<null>':
 			self.current_row[self.latitude_column] = self.latitude_inputted
 			self.current_row[self.longitude_column] = self.longitude_inputted
 			self.current_row[self.position_column] = self.position
         
         #saves the app's manifest instance onto the file
-        self.manifest[self.description_number] = self.current_row
-        self.write_manifest()
+		self.manifest[self.description_number] = self.current_row
+		self.write_manifest()
         
         #empties the input boxes
-        self.description.delete('1.0','end')
-        self.tags.delete('1.0','end')
-        self.address.delete(0,len(self.address_inputted))
-        self.latitude.delete(0,len(self.latitude_inputted))
-        self.longitude.delete(0,len(self.longitude_inputted))
+		self.description.delete('1.0','end')
+		self.tags.delete('1.0','end')
+		self.address.delete(0,len(self.address_inputted))
+		self.latitude.delete(0,len(self.latitude_inputted))
+		self.longitude.delete(0,len(self.longitude_inputted))
 	
 	def read_manifest(self):
 		try:
