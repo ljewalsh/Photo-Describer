@@ -247,25 +247,27 @@ class App:
                 else:
                     self.description.insert('1.0',row[self.description_column])
                 
-                if row[self.address_column] != "<null>":                
-                    self.address.insert(0,row[self.address_column])
-                else:
-                    self.address.insert(0,"")
+                if self.address_column != '<null>':
+					if row[self.address_column] != "<null>":                
+						self.address.insert(0,row[self.address_column])
+					else:
+						self.address.insert(0,"")
                 
                 if row[self.tags_column] != "<null>":
                     self.tags.insert('1.0',row[self.tags_column])
                 else:
                     self.tags.insert(1.0,"")
                 
-                if row[self.latitude_column] != "<null>":
-                    self.latitude.insert(0,row[self.latitude_column])
-                else:
-                    self.latitude.insert(0,"")
+                if self.position_column != '<null>':
+					if row[self.latitude_column] != "<null>":
+						self.latitude.insert(0,row[self.latitude_column])
+					else:
+						self.latitude.insert(0,"")
                     
-                if row[self.longitude_column] != "<null>":
-                    self.longitude.insert(0,row[self.longitude_column])
-                else:
-                    self.longitude.insert(0,"")
+					if row[self.longitude_column] != "<null>":
+						self.longitude.insert(0,row[self.longitude_column])
+					else:
+						self.longitude.insert(0,"")
                 
 
         
@@ -284,13 +286,15 @@ class App:
         self.photo_filesize_label.configure(text=self.get_file_size())
         self.photo_filesize_label.grid(row=2,column=1,sticky='nw')
         
-        self.latitude_label.configure(text='Latitude: ')
-        self.latitude_label.grid(row=3,column=0,sticky='nw')
-        self.latitude.grid(row=3, column=1)
+		
+        if self.position_column != '<null>':
+			self.latitude_label.configure(text='Latitude: ')
+			self.latitude_label.grid(row=3,column=0,sticky='nw')
+			self.latitude.grid(row=3, column=1)
         
-        self.longitude_label.configure(text='Longitude: ')
-        self.longitude_label.grid(row=4,column=0,sticky='nw')
-        self.longitude.grid(row=4,column=1)
+			self.longitude_label.configure(text='Longitude: ')
+			self.longitude_label.grid(row=4,column=0,sticky='nw')
+			self.longitude.grid(row=4,column=1)
         
         self.description_label.grid(row=0,column=0,sticky='e',pady=5)
         self.description.grid(row=0,column=1,columnspan=3,sticky='nsw',pady=5)
@@ -298,8 +302,9 @@ class App:
         self.tags_label.grid(row=1,column=0,sticky='nse',pady=5)
         self.tags.grid(row=1,column=1,sticky='nsw',pady=5)
         
-        self.address_label.grid(row=1,column=2,sticky='nsw',pady=5)
-        self.address.grid(row=1,column=3,sticky='nsw',pady=5)
+        if self.address_column != '<null>':
+			self.address_label.grid(row=1,column=2,sticky='nsw',pady=5)
+			self.address.grid(row=1,column=3,sticky='nsw',pady=5)
         
         self.display_thumbnail()
     
@@ -439,11 +444,13 @@ class App:
             self.tags_inputted = "<null>"
         
         #saves the inputted values onto the app's instance of the manifest
-        self.current_row[self.address_column] = self.address_inputted
         self.current_row[self.tags_column] = self.tags_inputted
-        self.current_row[self.latitude_column] = self.latitude_inputted
-        self.current_row[self.longitude_column] = self.longitude_inputted
-        self.current_row[self.position_column] = self.position
+        if self.address_column != '<null>':
+			self.current_row[self.address_column] = self.address_inputted
+        if self.position_column != '<null>':
+			self.current_row[self.latitude_column] = self.latitude_inputted
+			self.current_row[self.longitude_column] = self.longitude_inputted
+			self.current_row[self.position_column] = self.position
         
         #saves the app's manifest instance onto the file
         self.manifest[self.description_number] = self.current_row
@@ -457,7 +464,7 @@ class App:
         self.longitude.delete(0,len(self.longitude_inputted))
     
     def read_manifest(self):
-    	try:
+        try:
     		#opens the manifest file
         	file = open(self.manifest_location + '/manifest.csv','rb')               
         except IOError:
@@ -473,23 +480,31 @@ class App:
                 self.header = row
                 self.header_index = self.header.index            
             else:
-                self.manifest.append(row)
-                
+                self.manifest.append(row)                
     	try:
     		#finds the relavent header fields in the manifest files and references them
-        	self.description_column = self.header_index("part/field_dc_description")
-        	self.address_column = self.header_index("#address/field_dc_title")
-        	self.tags_column = self.header_index("part/field_part_tags")
-        	self.latitude_column = self.header_index("position/field_latitude")
-        	self.longitude_column = self.header_index("position/field_longitude")
-        	self.position_column = self.header_index("#position/field_dc_title")
+            self.description_column = self.header_index("part/field_dc_description")
+            self.tags_column = self.header_index("part/field_part_tags")
         except ValueError:
         	#If the correct headers can't be found, the local manifest is emptied and the function terminates
-        	MB_Title = "Invalid Manifest"
-        	MB_Text = "The manifest in the selected folder is not formatted correctly. Please reformat or delete it and try again."
-        	tkMessageBox.showerror(MB_Title, MB_Text)
-        	self.manifest = []
-        	return False
+            MB_Title = "Invalid Manifest"
+            MB_Text = "The manifest in the selected folder is not formatted correctly. Please reformat or delete it and try again."
+            tkMessageBox.showerror(MB_Title, MB_Text)
+            self.manifest = []
+            return False			
+		#The address, latitude, longitude and position fields are not nescessary; if they can't be found the column will simply be nulled
+        try:
+			self.address_column = self.header_index("#address/field_dc_title")	
+        except ValueError:
+			self.address_column = '<null>'
+        try:
+            self.latitude_column = self.header_index("position/field_latitude")
+            self.longitude_column = self.header_index("position/field_longitude")
+            self.position_column = self.header_index("#position/field_dc_title")
+        except ValueError:
+			self.latitude_column = '<null>'
+			self.longitude_column = '<null>'
+			self.position_column = '<null>'
         return True
         
     def delete_thumbnails(self):        
