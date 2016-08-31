@@ -239,24 +239,14 @@ class App:
 		self.go_to_photo_button.grid(row=0, column=3, sticky='e')
             
 		for row in self.manifest:            
-			if self.photos[self.description_number] in row:                
+			if self.photos[self.description_number] in row: 
+				
 				if row[self.description_column]=='<null>':
 					self.description.insert('1.0',"A photograph of ")
 				else:
 					self.description.insert('1.0',row[self.description_column])
-                
-				if self.address_column != '<null>':
-					if row[self.address_column] != "<null>":                
-						self.address.insert(0,row[self.address_column])
-					else:
-						self.address.insert(0,"")
-                
-				if row[self.tags_column] != "<null>":
-					self.tags.insert('1.0',row[self.tags_column])
-				else:
-					self.tags.insert(1.0,"")
-                
-                if self.position_column != '<null>':
+					
+				if self.position_column != '<null>':			
 					if row[self.latitude_column] != "<null>":
 						self.latitude.insert(0,row[self.latitude_column])
 					else:
@@ -266,6 +256,17 @@ class App:
 						self.longitude.insert(0,row[self.longitude_column])
 					else:
 						self.longitude.insert(0,"")
+                
+				if self.address_column != '<null>':
+					if row[self.address_column] != "<null>":                
+						self.address.insert(0,row[self.address_column])
+					else:
+						self.address.insert(0,"")                
+				
+				if row[self.tags_column] != "<null>":					
+					self.tags.insert('1.0',row[self.tags_column])					
+				else:
+					self.tags.insert(0,"")				
                 
 
         
@@ -505,6 +506,7 @@ class App:
 			self.latitude_column = self.header_index("position/field_latitude")
 			self.longitude_column = self.header_index("position/field_longitude")
 			self.position_column = self.header_index("#position/field_dc_title")
+			print("latitude: "+str(self.latitude_column)+" longitude: " + str(self.longitude_column) + " position: "+str(self.position_column))
 		except ValueError:
 			self.latitude_column = '<null>'
 			self.longitude_column = '<null>'
