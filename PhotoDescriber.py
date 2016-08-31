@@ -486,13 +486,9 @@ class App:
 				self.manifest.append(row)
 				
 		try:
-			#finds the relavent header fields in the manifest files and references them
-			self.description_column = self.header_index("part/field_dc_description")
-			self.address_column = self.header_index("#address/field_dc_title")
-			self.tags_column = self.header_index("part/field_part_tags")
-			self.latitude_column = self.header_index("position/field_latitude")
-			self.longitude_column = self.header_index("position/field_longitude")
-			self.position_column = self.header_index("#position/field_dc_title")
+			#finds the relavent header fields in the manifest files and references them			
+			self.description_column = self.header_index("part/field_dc_description")			
+			self.tags_column = self.header_index("part/field_part_tags")			
 		except ValueError:
 			#If the correct headers can't be found, the local manifest is emptied and the function terminates
 			MB_Title = "Invalid Manifest"
@@ -500,6 +496,19 @@ class App:
 			tkMessageBox.showerror(MB_Title, MB_Text)
 			self.manifest = []
 			return False
+		
+		try:
+			self.address_column = self.header_index("#address/field_dc_title")
+		except ValueError:
+			self.address_column = '<null>'
+		try:
+			self.latitude_column = self.header_index("position/field_latitude")
+			self.longitude_column = self.header_index("position/field_longitude")
+			self.position_column = self.header_index("#position/field_dc_title")
+		except ValueError:
+			self.latitude_column = '<null>'
+			self.longitude_column = '<null>'
+			self.position_column = '<null>'
 		return True
 		
 	def delete_thumbnails(self):        
