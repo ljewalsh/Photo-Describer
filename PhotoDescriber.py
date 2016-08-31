@@ -169,7 +169,7 @@ class App:
 		
 		self.next_undescribed_button = Tkinter.Button(self.button_frame,text="Next Undescribed",command= lambda: self.next_undescribed_photo(), bg='#EEF7F9',fg='#2a2f30')
 		
-		self.replicate_button = Tkinter.Button(self.button_frame, text="Replicate Previous", command= lambda: self.replicate_previous(), bg='#EEF7F9',fg='#2a2f30')
+		self.replicate_button = Tkinter.Button(self.image_link_frame, text="Replicate Previous", command= lambda: self.replicate_previous(), bg='#EEF7F9',fg='#2a2f30')
 		
 		'''
 		lists of photos, information in the manifest, and indecies of undescribed photos
@@ -230,7 +230,7 @@ class App:
 		self.next_button.grid(row=0,column=3,sticky='w')
 		self.next_undescribed_button.grid(row=0, column = 6, sticky='w')	
 		self.previous_button.grid(row=0,column=1,sticky='e')
-		self.replicate_button.grid(row=0, column=0, sticky='e')
+		self.replicate_button.grid(row=0, column=1, sticky='e')
         
 		if self.description_number == 0:            
 			self.previous_button.grid_forget()
