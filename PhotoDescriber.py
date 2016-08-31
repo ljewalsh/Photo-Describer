@@ -169,6 +169,8 @@ class App:
 		
 		self.next_undescribed_button = Tkinter.Button(self.button_frame,text="Next Undescribed",command= lambda: self.next_undescribed_photo(), bg='#EEF7F9',fg='#2a2f30')
 		
+		self.replicate_button = Tkinter.Button(self.button_frame, text="Replicate Previous", command= lambda: self.replicate_previous(), bg='#EEF7F9',fg='#2a2f30')
+		
 		'''
 		lists of photos, information in the manifest, and indecies of undescribed photos
 		'''
@@ -227,10 +229,12 @@ class App:
         
 		self.next_button.grid(row=0,column=3,sticky='w')
 		self.next_undescribed_button.grid(row=0, column = 6, sticky='w')	
-		self.previous_button.grid(row=0,column=0,sticky='e')
+		self.previous_button.grid(row=0,column=1,sticky='e')
+		self.replicate_button.grid(row=0, column=0, sticky='e')
         
 		if self.description_number == 0:            
-			self.previous_button.grid_forget()		
+			self.previous_button.grid_forget()
+			self.replicate_button.grid_forget()
 		if self.description_number == number_of_photos - 1:           
 			self.next_button.grid_forget()
 			self.next_undescribed_button.grid_forget()
@@ -461,6 +465,40 @@ class App:
 		self.address.delete(0,len(self.address_inputted))
 		self.latitude.delete(0,len(self.latitude_inputted))
 		self.longitude.delete(0,len(self.longitude_inputted))
+		
+	def replicate_previous(self):
+		previous_row = self.manifest[(self.description_number)-1]
+		self.description.delete('1.0','end')
+		self.tags.delete('1.0','end')
+		self.address.delete(0,'end')
+		self.latitude.delete(0,'end')
+		self.longitude.delete(0,'end')
+		if previous_row[self.description_column]=='<null>':
+			self.description.insert('1.0',"A photograph of ")
+		else:
+			self.description.insert('1.0',previous_row[self.description_column])
+					
+		if self.position_column != '<null>':			
+			if previous_row[self.latitude_column] != "<null>":
+				self.latitude.insert(0,previous_row[self.latitude_column])
+			else:
+				self.latitude.insert(0,"")
+			if previous_row[self.longitude_column] != "<null>":
+				self.longitude.insert(0,previous_row[self.longitude_column])
+			else:
+				self.longitude.insert(0,"")
+                
+		if self.address_column != '<null>':
+			if previous_row[self.address_column] != "<null>":                
+				self.address.insert(0,previous_row[self.address_column])
+			else:
+				self.address.insert(0,"")                
+				
+		if previous_row[self.tags_column] != "<null>":					
+			self.tags.insert('1.0',previous_row[self.tags_column])					
+		else:
+			self.tags.insert(0,"")	
+		
 	
 	def read_manifest(self):
 		try:
@@ -506,7 +544,6 @@ class App:
 			self.latitude_column = self.header_index("position/field_latitude")
 			self.longitude_column = self.header_index("position/field_longitude")
 			self.position_column = self.header_index("#position/field_dc_title")
-			print("latitude: "+str(self.latitude_column)+" longitude: " + str(self.longitude_column) + " position: "+str(self.position_column))
 		except ValueError:
 			self.latitude_column = '<null>'
 			self.longitude_column = '<null>'
